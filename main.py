@@ -1,4 +1,5 @@
 import json
+import os
 from functools import partial
 
 from aiohttp import web
@@ -29,4 +30,4 @@ routes = [
 
 app.add_routes(routes)
 
-web.run_app(app)
+web.run_app(app, port=os.environ['PORT'] if 'PORT' in os.environ else 8080)
