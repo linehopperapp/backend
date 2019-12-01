@@ -8,6 +8,11 @@ from models.coordinates import Coordinates
 from models.path import Path
 
 
+def linestring_to_coords(linestring: str) -> List[Coordinates]:
+    parsed = wkb.loads(linestring, hex=True)
+    return [Coordinates(lat, lon) for lon, lat in zip(parsed.xy[0], parsed.xy[1])]
+
+
 async def nearby_routes(lat: float, lon: float):
     conn = await asyncpg.connect(config.connection_string)
 
@@ -27,13 +32,20 @@ async def nearby_routes(lat: float, lon: float):
                        join route r on p.route_id = r.id
               where r.type in ('bus', 'trolleybus', 'tram')
               order by cp asc) as q
-        where q.cp < 1500"""
+        where q.cp < {config.radius}"""
 
     rows = await conn.fetch(query)
 
-    def linestring_to_coords(linestring: str) -> List[Coordinates]:
-        parsed = \
-            wkb.loads(linestring, hex=True)
-        return [Coordinates(lat, lon) for lon, lat in zip(parsed.xy[0], parsed.xy[1])]
+    colors = dict()
+    last_color = 0
 
-    return [Path(row['id'], row['number'], linestring_to_coords(row['path_geometry']), '#FF0000') for row in rows]
+    def get_color(route):
+        if route in colors:
+            return colors[route]
+        else:
+            nonlocal last_color
+            colors[route] = config.colors[last_color]
+            last_color = (last_color + 1) % len(config.colors)
+            return colors[route]
+
+    return [Path(row['id'], row['number'], linestring_to_coords(row['path_geometry']), get_color(row['number'])) for row in rows]

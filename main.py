@@ -22,8 +22,8 @@ async def handle_paths(request):
 
 
 async def handle_stops(request):
-    mock = [Stop(Coordinates(60, 30), [Stop.Arrival(1, '12', 5), Stop.Arrival(2, '21', 7)]),
-            Stop(Coordinates(60.1, 30.1), [Stop.Arrival(1, '13', 5), Stop.Arrival(2, '22', 7)])]
+    mock = [Stop(Coordinates(55.833923, 37.626517), [Stop.Arrival(1, '12', 5), Stop.Arrival(2, '21', 7)]),
+            Stop(Coordinates(55.834923, 37.627517), [Stop.Arrival(1, '13', 5), Stop.Arrival(2, '22', 7)])]
     return web.json_response(mock, dumps=partial(json.dumps, cls=StopJSONEncoder))
 
 
