@@ -59,7 +59,7 @@ async def init_app():
     routes = [
         web.get('/paths', handle_paths),
         web.get('/stops', handle_stops),
-        web.post('/tracking', handle_vehicles)
+        web.post('/vehicles', handle_vehicles)
     ]
 
     app.add_routes(routes)
