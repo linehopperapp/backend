@@ -11,8 +11,7 @@ class Stop:
             self.label = label
             self.time = time
 
-    def __init__(self, id: str, location: Coordinates, arrivals: List[Arrival]):
-        self.id = id
+    def __init__(self, location: Coordinates, arrivals: List[Arrival]):
         self.location = location
         self.arrivals = arrivals
 

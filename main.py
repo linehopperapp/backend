@@ -6,7 +6,7 @@ from aiohttp import web
 
 import config
 from data_access.paths import nearby_routes
-from data_access.stops import nearby_stop_ids, all_stops
+from data_access.stops import nearby_stops
 from models.coordinates import Coordinates
 from models.path import PathJSONEncoder
 from models.stop import Stop, StopJSONEncoder
@@ -26,14 +26,9 @@ async def handle_paths(request):
 async def handle_stops(request):
     lat = float(request.rel_url.query['lat'])
     lon = float(request.rel_url.query['lon'])
+    radius = float(request.rel_url.query['radius']) if 'radius' in request.rel_url.query else config.radius
 
-    nearby_ids = set(await nearby_stop_ids(lat, lon, config.radius))
-    stops = await all_stops(lat, lon)
-
-    for stop in stops:
-        if stop.id in nearby_ids:
-            stop.arrivals = [Stop.Arrival(0, '?', 1)]
-
+    stops = await nearby_stops(lat, lon, radius)
 
     #data = [Stop(Coordinates(55.833923, 37.626517), [Stop.Arrival(1, '12', 5), Stop.Arrival(2, '21', 7)]),
     #        Stop(Coordinates(55.834923, 37.627517), [Stop.Arrival(1, '13', 5), Stop.Arrival(2, '22', 7)])]
