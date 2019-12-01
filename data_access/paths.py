@@ -36,6 +36,8 @@ async def nearby_routes(lat: float, lon: float, radius: float) -> List[Path]:
 
     rows = await conn.fetch(query)
 
+    await conn.close()
+
     colors = dict()
     last_color = 0
 

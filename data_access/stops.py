@@ -18,6 +18,8 @@ async def nearby_stop_ids(lat: float, lon: float, radius: float) -> List[str]:
 
     rows = await conn.fetch(query)
 
+    await conn.close()
+
     return [r['id'] for r in rows]
 
 
@@ -39,5 +41,7 @@ async def all_stops(lat: float, lon: float) -> List[Stop]:
                 """
 
     rows = await conn.fetch(query)
+
+    await conn.close()
 
     return [Stop(r['id'], Coordinates(float(r['lat']), float(r['lon'])), arrivals=[]) for r in rows]
