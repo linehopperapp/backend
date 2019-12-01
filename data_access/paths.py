@@ -17,22 +17,16 @@ async def nearby_routes(lat: float, lon: float, radius: float) -> List[Path]:
     conn = await asyncpg.connect(config.connection_string)
 
     query = f"""
-        select *
-        from (select st_distance(st_closestpoint(st_transform(st_setsrid(p.path_geometry, 4326)::geometry, 3857),
-                                                 st_transform(ST_SetSRID(st_makepoint({lon}, {lat}), 4326)::geometry,
-                                                              3857)),
-                                 st_transform(ST_SetSRID(st_makepoint({lon}, {lat}), 4326)::geometry, 3857)) as cp,
-                     p.id,
-                     p.route_id,
-                     p.direction,
-                     r.number,
-                     r.type,
-                     p.path_geometry
-                 from route_path p
-                       join route r on p.route_id = r.id
-              where r.type in ('bus', 'trolleybus', 'tram')
-              order by cp asc) as q
-        where q.cp < {radius}"""
+        select rp.id, r.number, rp.path_geometry
+        from (select min(st_distance(st_transform(st_setsrid(s.geopoint, 4326)::geometry, 3857),
+                                     st_transform(ST_SetSRID(st_makepoint({lon}, {lat}), 4326)::geometry, 3857))) as d,
+                     s.id
+              from stop s
+              group by s.id) as q
+                 join path_stop ps on q.id = ps.stop_id
+                 join route_path rp on ps.route_path_id = rp.id
+                 join route r on rp.route_id = r.id
+        where q.d < {radius}"""
 
     rows = await conn.fetch(query)
 
