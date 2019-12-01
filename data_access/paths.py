@@ -13,7 +13,7 @@ def linestring_to_coords(linestring: str) -> List[Coordinates]:
     return [Coordinates(lat, lon) for lon, lat in zip(parsed.xy[0], parsed.xy[1])]
 
 
-async def nearby_routes(lat: float, lon: float):
+async def nearby_routes(lat: float, lon: float, radius: float) -> List[Path]:
     conn = await asyncpg.connect(config.connection_string)
 
     query = f"""
@@ -32,7 +32,7 @@ async def nearby_routes(lat: float, lon: float):
                        join route r on p.route_id = r.id
               where r.type in ('bus', 'trolleybus', 'tram')
               order by cp asc) as q
-        where q.cp < {config.radius}"""
+        where q.cp < {radius}"""
 
     rows = await conn.fetch(query)
 
