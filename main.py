@@ -46,8 +46,8 @@ async def handle_vehicles(request):
     #     pass
 
     data = [Vehicle('1', '89f5ac8e-efa2-49e0-8014-6d56b543b9c5',
-                    [Vehicle.Target(1000, datetime.now() + timedelta(seconds=60)),
-                     Vehicle.Target(2000, datetime.now() + timedelta(seconds=120))])]
+                    [Vehicle.Target(1000, datetime.utcnow() + timedelta(seconds=60)),
+                     Vehicle.Target(2000, datetime.utcnow() + timedelta(seconds=120))])]
 
     return web.json_response(data, dumps=partial(json.dumps, cls=VehicleJSONEncoder))
 
@@ -71,6 +71,6 @@ async def init_app():
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    #tracker = VehicleTracker(loop)
     app = loop.run_until_complete(init_app())
+    # tracker = VehicleTracker(loop, app['pool'])
     web.run_app(app, port=os.environ['PORT'] if 'PORT' in os.environ else 8080)

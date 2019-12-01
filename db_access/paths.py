@@ -1,6 +1,5 @@
 from typing import List
 
-import asyncpg
 from shapely import wkb
 
 import config
@@ -25,7 +24,7 @@ async def nearby_routes(lat: float, lon: float, radius: float, pool) -> List[Pat
                      join path_stop ps on q.id = ps.stop_id
                      join route_path rp on ps.route_path_id = rp.id
                      join route r on rp.route_id = r.id
-            where q.d < {radius}"""
+            where q.d < {radius} and r.type in ('bus', 'trolleybus', 'tram')"""
 
         rows = await conn.fetch(query)
 
@@ -42,3 +41,10 @@ async def nearby_routes(lat: float, lon: float, radius: float, pool) -> List[Pat
                 return colors[route]
 
         return [Path(row['id'], row['number'], linestring_to_coords(row['path_geometry']), get_color(row['number'])) for row in rows]
+
+
+async def route_and_path_points(path_id: str, pool) -> (str, List[Coordinates]):
+    async with pool.acquire() as conn:
+        query = f"select rp.path_geometry, r.number from route_path rp join route r on rp.route_id = r.id where rp.id = '{path_id}'"
+        row = await conn.fetchrow(query)
+        return (row['route'], linestring_to_coords(row['path_geometry']))
