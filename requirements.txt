@@ -2,3 +2,4 @@ aiohttp==3.6.2
 asyncpg==0.20.0
 postgis==1.0.4
 shapely==1.6.4
+pika==1.1.0
