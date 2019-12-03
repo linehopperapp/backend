@@ -3,6 +3,7 @@ from functools import partial
 from typing import List
 
 import pyproj
+from numpy import mean
 from pyproj import transform
 from shapely.geometry import LineString, Point
 
@@ -24,7 +25,7 @@ class VehicleEntry:
         self.mileage = None
 
     def register_update(self, lat, lon, speed, timestamp):
-        self.speeds.append((datetime.fromtimestamp(timestamp), speed))
+        self.speeds.append((datetime.fromtimestamp(timestamp), speed * 18 / 5))  # converting km/h to m/s
         self.cleanup_speeds()
         self.lat = lat
         self.lon = lon
@@ -33,6 +34,9 @@ class VehicleEntry:
     def cleanup_speeds(self):
         now = datetime.now()
         self.speeds = [(t, speed) for t, speed in self.speeds if (now - t).total_seconds() < config.speed_avg_window]
+
+    def average_speed(self):
+        return mean(speed for _, speed in self.speeds)
 
     def get_mileage(self, lat, lon):
         line = LineString([(pt.lon, pt.lat) for pt in self.path_points])
@@ -48,7 +52,7 @@ class VehicleEntry:
         del dists[nearest_idx]
         second_nearest_idx = min(dists.keys(), key=lambda i: dists[i])
 
-        assert abs(nearest_idx - second_nearest_idx) == 1 # expecting adjacent index
+        assert abs(nearest_idx - second_nearest_idx) == 1  # expecting adjacent index
 
         return (min(nearest_idx, second_nearest_idx), max(nearest_idx, second_nearest_idx))
 
@@ -69,9 +73,3 @@ class VehicleEntry:
             pyproj.Proj(init='EPSG:32633'))
         metric = transform(project, line)
         return metric.length
-
-
-
-
-
-

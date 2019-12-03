@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from aio_pika import connect, ExchangeType, IncomingMessage
 
@@ -36,10 +37,12 @@ class VehicleTracker:
                 route, pts = route_and_path_points(path_id, self.pool)
                 self.paths[path_id] = PathEntry(path_id, route, pts)
             self.vehicles[id] = VehicleEntry(id, path_id, self.paths[path_id].route, self.paths[path_id].path_points)
-        self.vehicles[id].register_update()
+        self.vehicles[id].register_update(lat, lon, speed, timestamp)
 
     def vehicle_animation(self, id: str, secs: float) -> Vehicle:
-        pass
+        if id in self.vehicles:
+            v = self.vehicles[id]
+            return Vehicle(id, v.path_id, [Vehicle.Target(v.mileage + v.average_speed * secs, datetime.utcnow().timestamp())])
 
     def vehicle_forecast(self, id: str):
         pass
